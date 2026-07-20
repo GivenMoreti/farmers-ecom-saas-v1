@@ -153,7 +153,7 @@ export default function MarketplacePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Find What You're Looking For</h1>
+      <h1 className="text-3xl font-bold mb-6">Find What You&apos;re Looking For</h1>
 
       {/* Search & Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">

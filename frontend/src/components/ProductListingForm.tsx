@@ -28,6 +28,19 @@ interface CategoryOption {
   name: string;
 }
 
+const defaultLivestockDetails = {
+  species: "CATTLE",
+  ageMonths: 0,
+  weightKg: 0,
+  vaccinationStatus: "UNVACCINATED",
+};
+
+const defaultCropDetails = {
+  quantityKg: 0,
+  harvestDate: "",
+  growingMethod: "CONVENTIONAL",
+};
+
 export const ProductListingForm = ({
   token,
   onSuccess,
@@ -257,9 +270,9 @@ export const ProductListingForm = ({
                     setFormData({
                       ...formData,
                       livestockDetails: {
-                        ...formData.livestockDetails,
+                        ...(formData.livestockDetails || defaultLivestockDetails),
                         species: e.target.value,
-                      } as any,
+                      },
                     })
                   }
                   className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
@@ -284,9 +297,9 @@ export const ProductListingForm = ({
                     setFormData({
                       ...formData,
                       livestockDetails: {
-                        ...formData.livestockDetails,
+                        ...(formData.livestockDetails || defaultLivestockDetails),
                         ageMonths: parseInt(e.target.value),
-                      } as any,
+                      },
                     })
                   }
                   className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
@@ -305,9 +318,9 @@ export const ProductListingForm = ({
                     setFormData({
                       ...formData,
                       livestockDetails: {
-                        ...formData.livestockDetails,
+                        ...(formData.livestockDetails || defaultLivestockDetails),
                         weightKg: parseFloat(e.target.value),
-                      } as any,
+                      },
                     })
                   }
                   className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
@@ -326,9 +339,9 @@ export const ProductListingForm = ({
                     setFormData({
                       ...formData,
                       livestockDetails: {
-                        ...formData.livestockDetails,
+                        ...(formData.livestockDetails || defaultLivestockDetails),
                         vaccinationStatus: e.target.value,
-                      } as any,
+                      },
                     })
                   }
                   className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
@@ -361,9 +374,9 @@ export const ProductListingForm = ({
                     setFormData({
                       ...formData,
                       cropDetails: {
-                        ...formData.cropDetails,
+                        ...(formData.cropDetails || defaultCropDetails),
                         quantityKg: parseFloat(e.target.value),
-                      } as any,
+                      },
                     })
                   }
                   className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
@@ -380,9 +393,9 @@ export const ProductListingForm = ({
                     setFormData({
                       ...formData,
                       cropDetails: {
-                        ...formData.cropDetails,
+                        ...(formData.cropDetails || defaultCropDetails),
                         harvestDate: e.target.value,
-                      } as any,
+                      },
                     })
                   }
                   className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
@@ -398,9 +411,9 @@ export const ProductListingForm = ({
                     setFormData({
                       ...formData,
                       cropDetails: {
-                        ...formData.cropDetails,
+                        ...(formData.cropDetails || defaultCropDetails),
                         growingMethod: e.target.value,
-                      } as any,
+                      },
                     })
                   }
                   className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
