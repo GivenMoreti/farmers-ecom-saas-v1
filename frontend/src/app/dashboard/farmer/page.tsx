@@ -60,7 +60,9 @@ export default function FarmerDashboard() {
     }
 
     setToken(storedToken);
-    fetchUserAndProducts(storedToken);
+    setTimeout(() => {
+      fetchUserAndProducts(storedToken);
+    }, 0);
   }, [fetchUserAndProducts, router]);
 
   const toggleListing = async (productId: string, currentStatus: boolean) => {
