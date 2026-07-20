@@ -37,10 +37,14 @@ public class AuthController {
 
     @PostMapping("/role/select")
     public ResponseEntity<?> selectRole(
-            @RequestParam String userId,
-            @RequestParam User.UserRole role
+            @RequestParam User.UserRole role,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(authService.selectRole(userId, role));
+        try {
+            return ResponseEntity.ok(authService.selectRole(authentication.getName(), role));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     @GetMapping("/me")

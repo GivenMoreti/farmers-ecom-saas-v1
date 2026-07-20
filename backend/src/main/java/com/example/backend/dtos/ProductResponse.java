@@ -16,8 +16,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ProductResponse {
     private String id;
+    private String farmerId;
     private String tenantId;
     private String farmName;
+    private Double farmerLatitude;
+    private Double farmerLongitude;
     private String categoryName;
     private String name;
     private String breed;
@@ -34,14 +37,33 @@ public class ProductResponse {
     private Map<String, Object> cropDetails;
     private int viewCount;
     private int favoriteCount;
+    private Double averageRating;
+    private Long reviewCount;
+    private Double distanceKm;
+    private Double recommendationScore;
     private LocalDateTime createdAt;
 
     public static ProductResponse fromEntity(Product product) {
+        return fromEntity(product, null, null, null, null);
+    }
+
+    public static ProductResponse fromEntity(
+            Product product,
+            Double averageRating,
+            Long reviewCount,
+            Double distanceKm,
+            Double recommendationScore
+    ) {
         return ProductResponse.builder()
                 .id(product.getId())
-                // .tenantId(product.getTenant().getId())
-                // .farmName(product.getTenant().getFarmName())
-                // .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .farmerId(product.getTenant() != null && product.getTenant().getUser() != null
+                    ? product.getTenant().getUser().getId()
+                    : null)
+                .tenantId(product.getTenant() != null ? product.getTenant().getId() : null)
+                .farmName(product.getTenant() != null ? product.getTenant().getFarmName() : null)
+                .farmerLatitude(product.getTenant() != null ? product.getTenant().getLatitude() : null)
+                .farmerLongitude(product.getTenant() != null ? product.getTenant().getLongitude() : null)
+                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                 .name(product.getName())
                 .breed(product.getBreed())
                 .description(product.getDescription())
@@ -57,6 +79,10 @@ public class ProductResponse {
                 .cropDetails(product.getCropDetails())
                 .viewCount(product.getViewCount())
                 .favoriteCount(product.getFavoriteCount())
+                .averageRating(averageRating)
+                .reviewCount(reviewCount)
+                .distanceKm(distanceKm)
+                .recommendationScore(recommendationScore)
                 .createdAt(product.getCreatedAt())
                 .build();
     }

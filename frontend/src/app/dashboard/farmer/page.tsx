@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { WalletStatus } from "@/components/WalletStatus";
 import { ProductListingForm } from "@/components/ProductListingForm";
@@ -16,30 +17,30 @@ interface Product {
   soldAt: string | null;
 }
 
+interface CurrentUser {
+  userId: string;
+  email: string;
+  displayName: string;
+  role: string;
+}
+
 export default function FarmerDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<CurrentUser | null>(null);
   const [token, setToken] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [showListingForm, setShowListingForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token") || "";
-    if (!storedToken) {
-      router.push("/auth");
-      return;
-    }
-
-    setToken(storedToken);
-
-    // Fetch user and products
-    fetchUserAndProducts(storedToken);
-  }, [router]);
-
-  const fetchUserAndProducts = async (authToken: string) => {
+  const fetchUserAndProducts = useCallback(async (authToken: string) => {
     try {
       const userData = await api.get("/auth/me", authToken);
+
+      if (userData.role !== "FARMER") {
+        router.push("/marketplace");
+        return;
+      }
+
       setUser(userData);
 
       const productsData = await api.get("/products/farmer/list", authToken);
@@ -49,7 +50,18 @@ export default function FarmerDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token") || "";
+    if (!storedToken) {
+      router.push("/auth");
+      return;
+    }
+
+    setToken(storedToken);
+    fetchUserAndProducts(storedToken);
+  }, [fetchUserAndProducts, router]);
 
   const toggleListing = async (productId: string, currentStatus: boolean) => {
     try {
@@ -116,7 +128,6 @@ export default function FarmerDashboard() {
       {showListingForm && (
         <div className="mb-6">
           <ProductListingForm
-            userId={user?.userId}
             token={token}
             onSuccess={() => {
               setShowListingForm(false);
@@ -134,7 +145,7 @@ export default function FarmerDashboard() {
         <div className="divide-y">
           {products.length === 0 ? (
             <div className="p-6 text-center text-gray-500">
-              You haven't listed any products yet. Click the button above to get
+              You haven&apos;t listed any products yet. Click the button above to get
               started.
             </div>
           ) : (
