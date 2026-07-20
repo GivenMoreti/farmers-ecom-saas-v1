@@ -27,13 +27,13 @@ export const signOut = async () => {
   localStorage.removeItem("user");
 };
 
-export const exchangeGoogleToken = async (idToken: string): Promise<any> => {
+export const exchangeGoogleToken = async (idToken: string): Promise<Record<string, unknown>> => {
   return api.post("/auth/google", { idToken });
 };
 
 export const selectRole = async (
   role: string,
   token: string,
-): Promise<any> => {
+): Promise<Record<string, unknown>> => {
   return api.post(`/auth/role/select?role=${role}`, {}, token);
 };

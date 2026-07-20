@@ -66,7 +66,9 @@ export default function MarketplacePage() {
   }, [filters]);
 
   useEffect(() => {
-    fetchProducts();
+    setTimeout(() => {
+      fetchProducts();
+    }, 0);
   }, [fetchProducts]);
 
   const addFavorite = async (productId: string) => {
