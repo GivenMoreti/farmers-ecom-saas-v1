@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useCallback } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
@@ -13,6 +14,10 @@ interface Product {
   farmName: string;
   categoryName: string;
   media: string[];
+  averageRating?: number;
+  reviewCount?: number;
+  distanceKm?: number;
+  recommendationScore?: number;
   livestockDetails?: {
     species: string;
     ageMonths: number;
@@ -31,19 +36,23 @@ export default function MarketplacePage() {
   const [filters, setFilters] = useState({
     category: "",
     query: "",
+    latitude: "",
+    longitude: "",
+    radiusKm: "",
+    minRating: "",
     minPrice: "",
     maxPrice: "",
   });
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (filters.category) params.append("category", filters.category);
       if (filters.query) params.append("query", filters.query);
+      if (filters.latitude) params.append("latitude", filters.latitude);
+      if (filters.longitude) params.append("longitude", filters.longitude);
+      if (filters.radiusKm) params.append("radiusKm", filters.radiusKm);
+      if (filters.minRating) params.append("minRating", filters.minRating);
       if (filters.minPrice) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
 
@@ -54,7 +63,11 @@ export default function MarketplacePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const addFavorite = async (productId: string) => {
     const token = localStorage.getItem("token") || "";
@@ -70,6 +83,27 @@ export default function MarketplacePage() {
       console.error("Failed to add favorite:", error);
       alert((error as Error).message || "Could not add favorite");
     }
+  };
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFilters((prev) => ({
+          ...prev,
+          latitude: position.coords.latitude.toFixed(6),
+          longitude: position.coords.longitude.toFixed(6),
+          radiusKm: prev.radiusKm || "100",
+        }));
+      },
+      () => {
+        alert("Unable to fetch your location.");
+      },
+    );
   };
 
   const placeOrder = async (productId: string) => {
@@ -163,6 +197,45 @@ export default function MarketplacePage() {
             }
             className="w-32 rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
           />
+          <input
+            type="number"
+            placeholder="Min Rating"
+            min="0"
+            max="5"
+            step="0.1"
+            value={filters.minRating}
+            onChange={(e) =>
+              setFilters({ ...filters, minRating: e.target.value })
+            }
+            className="w-32 rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+          />
+          <input
+            type="number"
+            placeholder="Latitude"
+            value={filters.latitude}
+            onChange={(e) => setFilters({ ...filters, latitude: e.target.value })}
+            className="w-36 rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+          />
+          <input
+            type="number"
+            placeholder="Longitude"
+            value={filters.longitude}
+            onChange={(e) => setFilters({ ...filters, longitude: e.target.value })}
+            className="w-36 rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+          />
+          <input
+            type="number"
+            placeholder="Radius (km)"
+            value={filters.radiusKm}
+            onChange={(e) => setFilters({ ...filters, radiusKm: e.target.value })}
+            className="w-32 rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+          />
+          <button
+            onClick={useMyLocation}
+            className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+          >
+            Use My Location
+          </button>
           <button
             onClick={fetchProducts}
             className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition"
@@ -216,6 +289,12 @@ export default function MarketplacePage() {
                   <span className="text-xs text-gray-400">
                     {product.farmName}
                   </span>
+                </div>
+                <div className="mt-2 text-xs text-gray-500 flex flex-wrap gap-3">
+                  <span>
+                    Rating: {product.averageRating != null ? product.averageRating.toFixed(1) : "0.0"} ({product.reviewCount || 0})
+                  </span>
+                  {product.distanceKm != null && <span>{product.distanceKm.toFixed(1)} km away</span>}
                 </div>
                 {product.livestockDetails && (
                   <div className="mt-2 text-xs text-gray-500">

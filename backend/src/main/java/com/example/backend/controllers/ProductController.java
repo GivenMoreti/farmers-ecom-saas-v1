@@ -30,17 +30,32 @@ public class ProductController {
             @RequestParam(required = false) Double latitude,
             @RequestParam(required = false) Double longitude,
             @RequestParam(required = false) Double radiusKm,
+            @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(productService.searchProducts(pageable));
+        return ResponseEntity.ok(productService.searchProducts(
+            category,
+            query,
+            latitude,
+            longitude,
+            radiusKm,
+            minRating,
+            minPrice,
+            maxPrice,
+            pageable
+        ));
     }
 
     @GetMapping("/farmer/list")
     public ResponseEntity<?> listFarmerProducts(Authentication authentication) {
-        String userId = authentication.getName();
-        return ResponseEntity.ok(productService.listFarmerProducts(userId));
+        try {
+            String userId = authentication.getName();
+            return ResponseEntity.ok(productService.listFarmerProducts(userId));
+        } catch (SecurityException ex) {
+            return ResponseEntity.status(403).body("Unauthorized");
+        }
     }
 
     @PostMapping("/farmer/create")
@@ -50,6 +65,8 @@ public class ProductController {
     ) {
         try {
             return ResponseEntity.ok(productService.createProduct(request, authentication.getName()));
+        } catch (SecurityException ex) {
+            return ResponseEntity.status(403).body("Unauthorized");
         } catch (IllegalStateException ex) {
             return ResponseEntity.badRequest().body(
                 ex.getMessage()

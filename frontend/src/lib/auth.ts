@@ -32,8 +32,8 @@ export const exchangeGoogleToken = async (idToken: string): Promise<any> => {
 };
 
 export const selectRole = async (
-  userId: string,
   role: string,
+  token: string,
 ): Promise<any> => {
-  return api.post(`/auth/role/select?userId=${userId}&role=${role}`, {});
+  return api.post(`/auth/role/select?role=${role}`, {}, token);
 };

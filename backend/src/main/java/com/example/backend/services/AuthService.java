@@ -82,6 +82,10 @@ public class AuthService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (role != User.UserRole.BUYER && role != User.UserRole.FARMER) {
+            throw new IllegalArgumentException("Only BUYER or FARMER roles can be selected.");
+        }
+
         user.setRole(role);
         userRepository.save(user);
         return buildAuthResponse(user, true);

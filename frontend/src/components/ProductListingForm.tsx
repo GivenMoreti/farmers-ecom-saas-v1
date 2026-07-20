@@ -1,5 +1,5 @@
 // components/ProductListingForm.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
 interface ProductFormData {
@@ -7,7 +7,7 @@ interface ProductFormData {
   breed: string;
   description: string;
   price: number;
-  category: string;
+  categoryId: string;
   dailyListingFee: number;
   isListed: boolean;
   livestockDetails?: {
@@ -23,21 +23,25 @@ interface ProductFormData {
   };
 }
 
+interface CategoryOption {
+  id: string;
+  name: string;
+}
+
 export const ProductListingForm = ({
-  userId,
   token,
   onSuccess,
 }: {
-  userId: string;
   token: string;
   onSuccess: () => void;
 }) => {
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     breed: "",
     description: "",
     price: 0,
-    category: "cattle",
+    categoryId: "",
     dailyListingFee: 1.0,
     isListed: true,
   });
@@ -46,6 +50,22 @@ export const ProductListingForm = ({
   const [productType, setProductType] = useState<"livestock" | "crop">(
     "livestock",
   );
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await api.get("/categories");
+        setCategories(data || []);
+        if (data?.length > 0) {
+          setFormData((prev) => ({ ...prev, categoryId: prev.categoryId || data[0].id }));
+        }
+      } catch (error) {
+        console.error("Failed to load categories", error);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +77,7 @@ export const ProductListingForm = ({
         "/products/farmer/create",
         {
           ...formData,
+          categoryId: formData.categoryId,
           // Add livestock or crop details based on type
           ...(productType === "livestock" && {
             livestockDetails: formData.livestockDetails,
@@ -129,6 +150,28 @@ export const ProductListingForm = ({
             className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
             placeholder="e.g., Nguni Cattle"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Category *</label>
+          <select
+            value={formData.categoryId}
+            onChange={(e) =>
+              setFormData({ ...formData, categoryId: e.target.value })
+            }
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+            required
+          >
+            {categories.length === 0 ? (
+              <option value="">No categories available</option>
+            ) : (
+              categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))
+            )}
+          </select>
         </div>
 
         <div>

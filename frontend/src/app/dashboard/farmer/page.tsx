@@ -40,6 +40,12 @@ export default function FarmerDashboard() {
   const fetchUserAndProducts = async (authToken: string) => {
     try {
       const userData = await api.get("/auth/me", authToken);
+
+      if (userData.role !== "FARMER") {
+        router.push("/marketplace");
+        return;
+      }
+
       setUser(userData);
 
       const productsData = await api.get("/products/farmer/list", authToken);
@@ -116,7 +122,6 @@ export default function FarmerDashboard() {
       {showListingForm && (
         <div className="mb-6">
           <ProductListingForm
-            userId={user?.userId}
             token={token}
             onSuccess={() => {
               setShowListingForm(false);
