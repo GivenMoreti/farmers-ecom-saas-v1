@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.security.Principal;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -26,6 +28,11 @@ import lombok.RequiredArgsConstructor;
 public class ChatController {
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+
+    private void broadcast(String destination, Object payload) {
+        Message<?> message = MessageBuilder.withPayload(payload).build();
+        messagingTemplate.send(destination, message);
+    }
 
     @GetMapping("/rooms/{roomId}/messages")
     @ResponseBody
@@ -70,10 +77,7 @@ public class ChatController {
         }
 
         // Broadcast to room
-        messagingTemplate.convertAndSend(
-            "/topic/chat/room/" + roomId,
-            (Object) persisted
-        );
+        broadcast("/topic/chat/room/" + roomId, persisted);
 
         // Send notification to the other user
         String receiverId;
@@ -112,10 +116,7 @@ public class ChatController {
         readPayload.put("userId", userId);
         readPayload.put("timestamp", LocalDateTime.now().toString());
 
-        messagingTemplate.convertAndSend(
-            "/topic/chat/room/" + roomId + "/read",
-            readPayload
-        );
+        broadcast("/topic/chat/room/" + roomId + "/read", readPayload);
     }
 
     @MessageMapping("/chat/room/{roomId}/typing")
@@ -133,9 +134,6 @@ public class ChatController {
         Map<String, Object> typingPayload = new HashMap<>();
         typingPayload.put("userId", userId);
         typingPayload.put("isTyping", isTyping);
-        messagingTemplate.convertAndSend(
-            "/topic/chat/room/" + roomId + "/typing",
-            typingPayload
-        );
+        broadcast("/topic/chat/room/" + roomId + "/typing", typingPayload);
     }
 }
