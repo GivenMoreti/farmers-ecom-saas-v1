@@ -76,6 +76,12 @@ public class Order {
     @Column(name = "delivery_instructions")
     private String deliveryInstructions;
 
+    @Column(name = "farmer_delivery_selected")
+    private boolean farmerDeliverySelected = false;
+
+    @Column(name = "farmer_delivery_fee", precision = 10, scale = 2)
+    private BigDecimal farmerDeliveryFee;
+
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
