@@ -27,6 +27,7 @@ interface Product {
 export default function MarketplacePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     category: "",
     query: "",
@@ -52,6 +53,59 @@ export default function MarketplacePage() {
       console.error("Failed to fetch products:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addFavorite = async (productId: string) => {
+    const token = localStorage.getItem("token") || "";
+    if (!token) {
+      alert("Please log in to favorite products");
+      return;
+    }
+
+    try {
+      await api.post(`/favorites/${productId}`, {}, token);
+      alert("Added to favorites");
+    } catch (error) {
+      console.error("Failed to add favorite:", error);
+      alert((error as Error).message || "Could not add favorite");
+    }
+  };
+
+  const placeOrder = async (productId: string) => {
+    const token = localStorage.getItem("token") || "";
+    if (!token) {
+      alert("Please log in to place an order");
+      return;
+    }
+
+    const deliveryAddress = window.prompt("Enter delivery address");
+    if (!deliveryAddress) return;
+
+    const farmerDelivery = window.confirm("Use farmer delivery if available?");
+    const feeInput = farmerDelivery
+      ? window.prompt("Farmer delivery fee (optional, default 0)", "0")
+      : "0";
+
+    setSubmitting(productId);
+    try {
+      await api.post(
+        "/orders",
+        {
+          productId,
+          deliveryAddress,
+          deliveryInstructions: "",
+          farmerDeliverySelected: farmerDelivery,
+          farmerDeliveryFee: Number(feeInput || 0),
+        },
+        token,
+      );
+      alert("Order placed successfully");
+    } catch (error) {
+      console.error("Failed to place order:", error);
+      alert((error as Error).message || "Failed to place order");
+    } finally {
+      setSubmitting(null);
     }
   };
 
@@ -179,6 +233,29 @@ export default function MarketplacePage() {
                     <span>Harvest: {product.cropDetails.harvestDate}</span>
                   </div>
                 )}
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addFavorite(product.id);
+                    }}
+                    className="px-3 py-2 text-sm bg-amber-500 text-white rounded"
+                  >
+                    Favorite
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      placeOrder(product.id);
+                    }}
+                    disabled={submitting === product.id}
+                    className="px-3 py-2 text-sm bg-primary text-white rounded disabled:opacity-60"
+                  >
+                    {submitting === product.id ? "Ordering..." : "Order"}
+                  </button>
+                </div>
               </div>
             </Link>
           ))}
