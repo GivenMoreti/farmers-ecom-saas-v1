@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { api } from "@/lib/api";
 
 interface Product {
   id: string;
@@ -45,8 +46,7 @@ export default function MarketplacePage() {
       if (filters.minPrice) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
 
-      const response = await fetch(`/api/products/public/search?${params}`);
-      const data = await response.json();
+      const data = await api.get(`/products/public/search?${params.toString()}`);
       setProducts(data.content || []);
     } catch (error) {
       console.error("Failed to fetch products:", error);

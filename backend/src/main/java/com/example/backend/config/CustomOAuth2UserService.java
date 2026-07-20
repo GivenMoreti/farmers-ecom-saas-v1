@@ -2,6 +2,8 @@ package com.example.backend.config;
 
 import java.util.Map;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.backend.models.GoogleAccount;
 import com.example.backend.models.User;
 import com.example.backend.models.Wallet;
+import com.example.backend.repositories.GoogleAccountRepository;
 import com.example.backend.repositories.UserRepository;
 import com.example.backend.repositories.WalletRepository;
 import jakarta.transaction.Transactional;

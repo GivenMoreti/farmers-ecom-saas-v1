@@ -17,4 +17,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     // Define methods for product-related database operations
 
     List<Product> findByIsListedTrueAndStatus(ProductStatus available);
+
+    List<Product> findByTenantUserIdOrderByCreatedAtDesc(String userId);
 }

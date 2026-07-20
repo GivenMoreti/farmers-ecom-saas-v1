@@ -35,11 +35,11 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return ((Object) Jwts.parser())
-            .verifyWith(getSigningKey())
+        return Jwts.parserBuilder()
+            .setSigningKey(getSigningKey())
             .build()
-            .parseSignedClaims(token)
-            .getPayload();
+            .parseClaimsJws(token)
+            .getBody();
     }
 
     public String generateToken(String userId, String email, String role) {
@@ -51,10 +51,10 @@ public class JwtService {
 
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-            .claims(claims)
-            .subject(subject)
-            .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+            .setClaims(claims)
+            .setSubject(subject)
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
             .signWith(getSigningKey())
             .compact();
     }

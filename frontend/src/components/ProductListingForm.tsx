@@ -1,5 +1,6 @@
 // components/ProductListingForm.tsx
 import { useState } from "react";
+import { api } from "@/lib/api";
 
 interface ProductFormData {
   name: string;
@@ -52,13 +53,9 @@ export const ProductListingForm = ({
     setError(null);
 
     try {
-      const response = await fetch("/api/products/farmer/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      await api.post(
+        "/products/farmer/create",
+        {
           ...formData,
           // Add livestock or crop details based on type
           ...(productType === "livestock" && {
@@ -67,13 +64,9 @@ export const ProductListingForm = ({
           ...(productType === "crop" && {
             cropDetails: formData.cropDetails,
           }),
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
-      }
+        },
+        token,
+      );
 
       onSuccess();
     } catch (err: any) {

@@ -1,5 +1,6 @@
 // components/WalletStatus.tsx
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
 interface WalletData {
   balance: number;
@@ -19,10 +20,7 @@ export const WalletStatus = ({
   useEffect(() => {
     const fetchWallet = async () => {
       try {
-        const response = await fetch("/api/wallet/balance", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await response.json();
+        const data = await api.get("/wallet/balance", token);
         setWallet(data);
       } catch (error) {
         console.error("Failed to fetch wallet:", error);

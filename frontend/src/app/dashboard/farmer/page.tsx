@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { WalletStatus } from "@/components/WalletStatus";
 import { ProductListingForm } from "@/components/ProductListingForm";
+import { api } from "@/lib/api";
 
 interface Product {
   id: string;
@@ -18,34 +19,30 @@ interface Product {
 export default function FarmerDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [token, setToken] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [showListingForm, setShowListingForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    const storedToken = localStorage.getItem("token") || "";
+    if (!storedToken) {
       router.push("/auth");
       return;
     }
 
-    // Fetch user and products
-    fetchUserAndProducts();
-  }, []);
+    setToken(storedToken);
 
-  const fetchUserAndProducts = async () => {
-    const token = localStorage.getItem("token");
+    // Fetch user and products
+    fetchUserAndProducts(storedToken);
+  }, [router]);
+
+  const fetchUserAndProducts = async (authToken: string) => {
     try {
-      const userRes = await fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const userData = await userRes.json();
+      const userData = await api.get("/auth/me", authToken);
       setUser(userData);
 
-      const productsRes = await fetch("/api/products/farmer/list", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const productsData = await productsRes.json();
+      const productsData = await api.get("/products/farmer/list", authToken);
       setProducts(productsData);
     } catch (error) {
       console.error("Failed to fetch data:", error);
@@ -55,54 +52,31 @@ export default function FarmerDashboard() {
   };
 
   const toggleListing = async (productId: string, currentStatus: boolean) => {
-    const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`/api/products/farmer/${productId}/toggle`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isListed: !currentStatus }),
-      });
-
-      if (response.ok) {
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === productId ? { ...p, isListed: !currentStatus } : p,
-          ),
-        );
-      } else {
-        const error = await response.text();
-        alert(error);
-      }
+      await api.post(`/products/farmer/${productId}/toggle`, {}, token);
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId ? { ...p, isListed: !currentStatus } : p,
+        ),
+      );
     } catch (error) {
       console.error("Failed to toggle listing:", error);
+      alert((error as Error).message || "Failed to toggle listing");
     }
   };
 
   const markAsSold = async (productId: string) => {
     if (!confirm("Mark this product as sold?")) return;
 
-    const token = localStorage.getItem("token");
     try {
-      const response = await fetch(
-        `/api/products/farmer/${productId}/mark-sold`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        },
+      await api.post(`/products/farmer/${productId}/mark-sold`, {}, token);
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId
+            ? { ...p, status: "SOLD", soldAt: new Date().toISOString() }
+            : p,
+        ),
       );
-
-      if (response.ok) {
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === productId
-              ? { ...p, status: "SOLD", soldAt: new Date().toISOString() }
-              : p,
-          ),
-        );
-      }
     } catch (error) {
       console.error("Failed to mark as sold:", error);
     }
@@ -134,7 +108,7 @@ export default function FarmerDashboard() {
       <div className="mb-6">
         <WalletStatus
           userId={user?.userId}
-          token={localStorage.getItem("token") || ""}
+          token={token}
         />
       </div>
 
@@ -143,10 +117,10 @@ export default function FarmerDashboard() {
         <div className="mb-6">
           <ProductListingForm
             userId={user?.userId}
-            token={localStorage.getItem("token") || ""}
+            token={token}
             onSuccess={() => {
               setShowListingForm(false);
-              fetchUserAndProducts();
+              fetchUserAndProducts(token);
             }}
           />
         </div>

@@ -1,7 +1,8 @@
 // hooks/useChat.ts
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Client, StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { api } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -14,6 +15,9 @@ interface Message {
   sentAt: string;
 }
 
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_BASE = RAW_API_URL.endsWith("/api") ? RAW_API_URL.slice(0, -4) : RAW_API_URL;
+
 export const useChat = (roomId: string, token: string) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -22,7 +26,9 @@ export const useChat = (roomId: string, token: string) => {
   const subscriptionRef = useRef<StompSubscription | null>(null);
 
   useEffect(() => {
-    const socket = new SockJS(`${process.env.NEXT_PUBLIC_API_URL}/ws/chat`);
+    if (!roomId || !token) return;
+
+    const socket = new SockJS(`${API_BASE}/ws/chat`);
     const client = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
@@ -31,7 +37,6 @@ export const useChat = (roomId: string, token: string) => {
       onConnect: () => {
         setIsConnected(true);
 
-        // Subscribe to chat room
         subscriptionRef.current = client.subscribe(
           `/topic/chat/room/${roomId}`,
           (message) => {
@@ -40,7 +45,6 @@ export const useChat = (roomId: string, token: string) => {
           },
         );
 
-        // Subscribe to typing indicators
         client.subscribe(`/topic/chat/room/${roomId}/typing`, (message) => {
           const data = JSON.parse(message.body);
           setTypingUsers((prev) => {
@@ -54,7 +58,6 @@ export const useChat = (roomId: string, token: string) => {
           });
         });
 
-        // Subscribe to read receipts
         client.subscribe(`/topic/chat/room/${roomId}/read`, (message) => {
           const data = JSON.parse(message.body);
           setMessages((prev) =>
@@ -65,7 +68,6 @@ export const useChat = (roomId: string, token: string) => {
           );
         });
 
-        // Load existing messages
         loadMessages();
       },
       onStompError: (frame) => {
@@ -84,13 +86,7 @@ export const useChat = (roomId: string, token: string) => {
 
   const loadMessages = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/chat/rooms/${roomId}/messages`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      const data = await response.json();
+      const data = await api.get(`/chat/rooms/${roomId}/messages`, token);
       setMessages(data);
     } catch (error) {
       console.error("Failed to load messages:", error);

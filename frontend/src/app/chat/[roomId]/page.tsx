@@ -9,8 +9,14 @@ export default function ChatPage() {
   const params = useParams();
   const roomId = params.roomId as string;
   const [input, setInput] = useState("");
+  const [token, setToken] = useState("");
+  const [userId, setUserId] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const token = localStorage.getItem("token") || "";
+
+  useEffect(() => {
+    setToken(localStorage.getItem("token") || "");
+    setUserId(localStorage.getItem("userId") || "");
+  }, []);
 
   const {
     messages,
@@ -51,7 +57,7 @@ export default function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-3">
         {messages.map((msg) => {
-          const isOwn = msg.senderId === localStorage.getItem("userId");
+          const isOwn = msg.senderId === userId;
           return (
             <div
               key={msg.id}
