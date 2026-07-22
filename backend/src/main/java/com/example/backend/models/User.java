@@ -69,8 +69,8 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Wallet wallet;
 
-    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
-    private List<Product> products = new ArrayList<>();
+    // @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
+    // private List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL)
     private List<Order> buyerOrders = new ArrayList<>();
