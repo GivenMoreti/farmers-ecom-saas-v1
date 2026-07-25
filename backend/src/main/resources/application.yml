@@ -1,8 +1,8 @@
 
 spring:
   config:
-    # Load local backend environment variables from backend/.env
-    import: optional:file:.env[.properties]
+    # Load local backend environment variables for both backend cwd and repo-root launches
+    import: optional:file:.env[.properties],optional:file:backend/.env[.properties]
 
   application:
     name: farm-marketplace
