@@ -1,0 +1,325 @@
+@baseUrl = http://localhost:8080
+@token = Bearer {{login.response.body.token}}
+
+###############################################################################
+# AUTH
+###############################################################################
+
+### Google Login
+# @name googleLogin
+POST {{baseUrl}}/api/auth/google
+Content-Type: application/json
+
+{
+  "email": "user@gmail.com",
+  "provider": "google",
+  "idToken": "google-id-token-here"
+}
+
+---
+
+### Email Login
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "provider": "email"
+}
+
+---
+
+### Select Role (FARMER | BUYER | ADMIN | DRIVER)
+POST {{baseUrl}}/api/auth/role/select?role=FARMER
+Authorization: {{token}}
+
+---
+
+### Get Current User
+GET {{baseUrl}}/api/auth/me
+Authorization: {{token}}
+
+---
+
+###############################################################################
+# CATEGORIES
+###############################################################################
+
+### List All Categories
+GET {{baseUrl}}/api/categories
+
+---
+
+### Create Category (Admin)
+POST {{baseUrl}}/api/categories
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "name": "Livestock",
+  "description": "Cattle, goats, sheep, and poultry",
+  "active": true
+}
+
+---
+
+###############################################################################
+# PRODUCTS
+###############################################################################
+
+### Search Products (public)
+GET {{baseUrl}}/api/products/public/search?category=Livestock&query=cattle&latitude=-26.2041&longitude=28.0473&radiusKm=50&minPrice=100&maxPrice=5000&page=0&size=20
+
+---
+
+### List Farmer's Own Products
+GET {{baseUrl}}/api/products/farmer/list
+Authorization: {{token}}
+
+---
+
+### Create Product (Farmer)
+POST {{baseUrl}}/api/products/farmer/create
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "categoryId": "category-uuid-here",
+  "name": "Nguni Cattle",
+  "breed": "Nguni",
+  "description": "Healthy 2-year-old Nguni bull, vaccinated.",
+  "price": 12000.00,
+  "priceUnit": "PER_HEAD",
+  "dailyListingFee": 5.00,
+  "isListed": true,
+  "media": ["https://example.com/image1.jpg"],
+  "livestockDetails": {
+    "age": "2 years",
+    "weight": "350kg",
+    "vaccinated": true
+  },
+  "cropDetails": null
+}
+
+---
+
+### Toggle Product Listing On/Off
+POST {{baseUrl}}/api/products/farmer/product-uuid-here/toggle
+Authorization: {{token}}
+
+---
+
+### Mark Product as Sold
+POST {{baseUrl}}/api/products/farmer/product-uuid-here/mark-sold
+Authorization: {{token}}
+
+---
+
+###############################################################################
+# FARMER PROFILE
+###############################################################################
+
+### Get Farmer Profile
+GET {{baseUrl}}/api/farmer/profile
+Authorization: {{token}}
+
+---
+
+### Create / Update Farmer Profile
+POST {{baseUrl}}/api/farmer/profile
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "farmName": "Green Valley Farm",
+  "farmDescription": "Organic cattle and crop farm in Limpopo.",
+  "registrationNumber": "REG-2024-001",
+  "address": "123 Farm Road, Polokwane, Limpopo",
+  "latitude": -23.9045,
+  "longitude": 29.4686,
+  "contactPhone": "+27821234567",
+  "logoUrl": "https://example.com/logo.png"
+}
+
+---
+
+###############################################################################
+# ORDERS
+###############################################################################
+
+### List Buyer Orders
+GET {{baseUrl}}/api/orders/buyer
+Authorization: {{token}}
+
+---
+
+### List Farmer Orders
+GET {{baseUrl}}/api/orders/farmer
+Authorization: {{token}}
+
+---
+
+### Create Order
+POST {{baseUrl}}/api/orders
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "productId": "product-uuid-here",
+  "deliveryAddress": "456 Buyer Street, Johannesburg",
+  "deliveryInstructions": "Call before arriving",
+  "farmerDeliverySelected": true,
+  "farmerDeliveryFee": 250.00
+}
+
+---
+
+### Update Order Status
+# status: CART | PENDING | PAID | PROCESSING | READY | DELIVERED | COMPLETED | CANCELLED
+PUT {{baseUrl}}/api/orders/order-uuid-here/status
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "status": "PAID"
+}
+
+---
+
+###############################################################################
+# DELIVERIES
+###############################################################################
+
+### List Deliveries for an Order
+GET {{baseUrl}}/api/deliveries/order/order-uuid-here
+Authorization: {{token}}
+
+---
+
+### Create Delivery
+POST {{baseUrl}}/api/deliveries
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "orderId": "order-uuid-here",
+  "vehicleId": "vehicle-uuid-here",
+  "driverId": "driver-user-uuid-here",
+  "pickupAddress": "123 Farm Road, Polokwane",
+  "dropoffAddress": "456 Buyer Street, Johannesburg"
+}
+
+---
+
+### Update Delivery Status
+# status: PENDING | ASSIGNED | PICKED_UP | IN_TRANSIT | DELIVERED | FAILED | CANCELLED
+PUT {{baseUrl}}/api/deliveries/delivery-uuid-here/status
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "status": "IN_TRANSIT"
+}
+
+---
+
+###############################################################################
+# VEHICLES
+###############################################################################
+
+### List Farmer Vehicles
+GET {{baseUrl}}/api/vehicles/farmer
+Authorization: {{token}}
+
+---
+
+### Create Vehicle
+POST {{baseUrl}}/api/vehicles/farmer
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "registrationNumber": "GP 123-456",
+  "make": "Toyota",
+  "model": "Hilux",
+  "year": 2020,
+  "capacityKg": 1000.0,
+  "vehicleType": "TRUCK"
+}
+
+---
+
+###############################################################################
+# WALLET
+###############################################################################
+
+### Get Wallet Balance
+GET {{baseUrl}}/api/wallet/balance
+Authorization: {{token}}
+
+---
+
+### Get Wallet Transactions
+GET {{baseUrl}}/api/wallet/transactions
+Authorization: {{token}}
+
+---
+
+### Initiate Top-Up
+POST {{baseUrl}}/api/wallet/topup/initiate?amount=500.00
+Authorization: {{token}}
+
+---
+
+###############################################################################
+# FAVORITES
+###############################################################################
+
+### List My Favorites
+GET {{baseUrl}}/api/favorites
+Authorization: {{token}}
+
+---
+
+### Add Product to Favorites
+POST {{baseUrl}}/api/favorites/product-uuid-here
+Authorization: {{token}}
+
+---
+
+### Remove Product from Favorites
+DELETE {{baseUrl}}/api/favorites/product-uuid-here
+Authorization: {{token}}
+
+---
+
+###############################################################################
+# REVIEWS
+###############################################################################
+
+### List Reviews for a Product
+GET {{baseUrl}}/api/reviews?productId=product-uuid-here
+
+---
+
+### Create Review (after completed order)
+POST {{baseUrl}}/api/reviews
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "orderId": "order-uuid-here",
+  "rating": 5,
+  "comment": "Excellent quality cattle, very healthy."
+}
+
+---
+
+###############################################################################
+# CHAT (REST — WebSocket endpoints are separate)
+###############################################################################
+
+### Get Messages for a Chat Room
+GET {{baseUrl}}/api/chat/rooms/room-uuid-here/messages
+Authorization: {{token}}

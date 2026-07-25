@@ -176,7 +176,7 @@ export default function AuthPage() {
 
   if (!authUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50 p-6">
+      <div className="min-h-screen bg-linear-to-br from-green-50 via-white to-amber-50 p-6">
         <div className="mx-auto mt-20 max-w-xl rounded-2xl border border-green-100 bg-white p-8 shadow-lg">
           <h1 className="text-3xl font-bold text-gray-900">Farmers Marketplace</h1>
           <p className="mt-3 text-gray-600">
