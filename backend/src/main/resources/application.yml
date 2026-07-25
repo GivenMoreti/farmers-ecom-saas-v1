@@ -1,5 +1,9 @@
 
 spring:
+  config:
+    # Load local backend environment variables from backend/.env
+    import: optional:file:.env[.properties]
+
   application:
     name: farm-marketplace
 
@@ -24,8 +28,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:your-client-id}
-            client-secret: ${GOOGLE_CLIENT_SECRET:your-client-secret}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - email
               - profile
