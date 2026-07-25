@@ -1,30 +1,20 @@
 // lib/auth.ts
-import {
-  signInWithPopup,
-  signOut as firebaseSignOut,
-  User,
-} from "firebase/auth";
-import { auth, googleProvider } from "./firebase";
 import { api } from "./api";
 
-export const signInWithGoogle = async (): Promise<{
-  user: User;
-  idToken: string;
-}> => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const idToken = await result.user.getIdToken();
-    return { user: result.user, idToken };
-  } catch (error) {
-    console.error("Google sign-in error:", error);
-    throw error;
-  }
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const BACKEND_BASE_URL = API_URL.endsWith("/api")
+  ? API_URL.slice(0, -4)
+  : API_URL;
+
+export const startGoogleLogin = () => {
+  if (typeof window === "undefined") return;
+  window.location.assign(`${BACKEND_BASE_URL}/oauth2/authorization/google`);
 };
 
 export const signOut = async () => {
-  await firebaseSignOut(auth);
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  localStorage.removeItem("userId");
 };
 
 export interface AuthResponse {
@@ -34,10 +24,6 @@ export interface AuthResponse {
   displayName: string;
   role: "BUYER" | "FARMER" | "ADMIN" | "DRIVER";
 }
-
-export const exchangeGoogleToken = async (idToken: string): Promise<AuthResponse> => {
-  return api.post("/auth/google", { idToken });
-};
 
 export const selectRole = async (
   role: string,

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { exchangeGoogleToken, selectRole, signInWithGoogle } from "@/lib/auth";
+import { selectRole, startGoogleLogin } from "@/lib/auth";
 
 type AuthUser = {
   token: string;
@@ -66,30 +66,10 @@ export default function AuthPage() {
       });
   }, []);
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     setAuthError(null);
     setLoading(true);
-    try {
-      const { idToken } = await signInWithGoogle();
-      const result = await exchangeGoogleToken(idToken);
-
-      const nextUser: AuthUser = {
-        token: result.token,
-        userId: result.userId,
-        email: result.email,
-        displayName: result.displayName,
-        role: result.role,
-      };
-
-      localStorage.setItem("token", nextUser.token);
-      localStorage.setItem("user", JSON.stringify(nextUser));
-      localStorage.setItem("userId", nextUser.userId);
-      setAuthUser(nextUser);
-    } catch (error) {
-      setAuthError((error as Error).message || "Failed to sign in");
-    } finally {
-      setLoading(false);
-    }
+    startGoogleLogin();
   };
 
   const updateUserSession = (nextUser: AuthUser) => {
