@@ -11,13 +11,15 @@ export const WalletStatus = ({
   userId,
   token,
 }: {
-  userId: string;
+  userId?: string;
   token: string;
 }) => {
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!token || !userId) return;
+
     const fetchWallet = async () => {
       try {
         const data = await api.get("/wallet/balance", token);
