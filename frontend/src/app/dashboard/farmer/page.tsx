@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { WalletStatus } from "@/components/WalletStatus";
+// import { WalletStatus } from "@/components/WalletStatus";
 import { ProductListingForm } from "@/components/ProductListingForm";
 import { api } from "@/lib/api";
 
@@ -123,12 +123,14 @@ export default function FarmerDashboard() {
         </div>
       </div>
 
-      {/* Wallet Status */}
+      {/* Wallet Status disabled temporarily */}
+      {/*
       {user && token && (
         <div className="mb-6">
           <WalletStatus userId={user.userId} token={token} />
         </div>
       )}
+      */}
 
       {/* Listing Form */}
       {showListingForm && (
