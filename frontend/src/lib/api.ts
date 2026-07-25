@@ -3,7 +3,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export const api = {
   get: async (endpoint: string, token?: string) => {
-    const headers: HeadersInit = {};
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
@@ -54,7 +56,9 @@ export const api = {
   },
 
   delete: async (endpoint: string, token?: string) => {
-    const headers: HeadersInit = {};
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
