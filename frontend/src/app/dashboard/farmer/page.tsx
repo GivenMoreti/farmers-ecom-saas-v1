@@ -27,7 +27,10 @@ interface CurrentUser {
 export default function FarmerDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<CurrentUser | null>(null);
-  const [token, setToken] = useState("");
+  const [token] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("token") || "";
+  });
   const [products, setProducts] = useState<Product[]>([]);
   const [showListingForm, setShowListingForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -47,23 +50,25 @@ export default function FarmerDashboard() {
       setProducts(productsData);
     } catch (error) {
       console.error("Failed to fetch data:", error);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("userId");
+      router.push("/auth");
     } finally {
       setLoading(false);
     }
   }, [router]);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token") || "";
+    const storedToken = token || localStorage.getItem("token") || "";
     if (!storedToken) {
       router.push("/auth");
       return;
     }
-
-    setToken(storedToken);
     setTimeout(() => {
       fetchUserAndProducts(storedToken);
     }, 0);
-  }, [fetchUserAndProducts, router]);
+  }, [fetchUserAndProducts, router, token]);
 
   const toggleListing = async (productId: string, currentStatus: boolean) => {
     try {
@@ -119,12 +124,11 @@ export default function FarmerDashboard() {
       </div>
 
       {/* Wallet Status */}
-      <div className="mb-6">
-        <WalletStatus
-          userId={user?.userId}
-          token={token}
-        />
-      </div>
+      {user && token && (
+        <div className="mb-6">
+          <WalletStatus userId={user.userId} token={token} />
+        </div>
+      )}
 
       {/* Listing Form */}
       {showListingForm && (
