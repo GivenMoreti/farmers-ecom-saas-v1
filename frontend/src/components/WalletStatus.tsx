@@ -1,5 +1,6 @@
 // components/WalletStatus.tsx
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { api } from "@/lib/api";
 
 interface WalletData {
@@ -46,9 +47,11 @@ export const WalletStatus = ({
           </p>
         </div>
         <button
-          onClick={() => {
-            /* Open top-up modal */
-          }}
+          onClick={() =>
+            toast("Online top-ups are launching soon — contact support to add funds for now.", {
+              icon: "💳",
+            })
+          }
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition"
         >
           Top Up

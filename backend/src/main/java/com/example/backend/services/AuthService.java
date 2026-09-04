@@ -1,6 +1,7 @@
 package com.example.backend.services;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    private static final BigDecimal LAUNCH_TRIAL_CREDIT = new BigDecimal("100.00");
 
     private final UserRepository userRepository;
     private final GoogleAccountRepository googleAccountRepository;
@@ -81,8 +84,14 @@ public class AuthService {
                 .active(true)
                 .build()));
 
+        // Launch trial credit: wallet top-ups aren't wired to a real payment
+        // gateway yet, so every new user starts with enough balance to try
+        // listing/ordering without hitting a dead end on day one.
         walletRepository.findByUserId(user.getId())
-            .orElseGet(() -> walletRepository.save(Wallet.builder().user(user).build()));
+            .orElseGet(() -> walletRepository.save(Wallet.builder()
+                .user(user)
+                .balance(LAUNCH_TRIAL_CREDIT)
+                .build()));
 
         if (googleId != null && !googleId.isBlank()) {
             GoogleAccount account = googleAccountRepository.findByGoogleId(googleId)

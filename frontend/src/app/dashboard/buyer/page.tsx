@@ -116,11 +116,6 @@ export default function BuyerDashboardPage() {
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
 
-  const [topupAmount, setTopupAmount] = useState("");
-  const [topupLoading, setTopupLoading] = useState(false);
-  const [topupError, setTopupError] = useState<string | null>(null);
-  const [topupResult, setTopupResult] = useState<string | null>(null);
-
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [removingFavId, setRemovingFavId] = useState<string | null>(null);
 
@@ -185,26 +180,6 @@ export default function BuyerDashboardPage() {
       alert((e as Error).message || "Could not remove favourite");
     } finally {
       setRemovingFavId(null);
-    }
-  };
-
-  const initiateTopup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTopupError(null);
-    setTopupResult(null);
-    const amount = parseFloat(topupAmount);
-    if (!amount || amount <= 0) {
-      setTopupError("Enter a valid amount");
-      return;
-    }
-    setTopupLoading(true);
-    try {
-      const result = await api.post(`/wallet/topup/initiate?amount=${amount}`, {}, tokenRef.current);
-      setTopupResult(result?.paymentUrl || result?.message || "Top-up initiated — follow your payment provider's link.");
-    } catch (e) {
-      setTopupError((e as Error).message || "Top-up failed");
-    } finally {
-      setTopupLoading(false);
     }
   };
 
@@ -360,33 +335,19 @@ export default function BuyerDashboardPage() {
               <p className="mt-1 text-sm opacity-70">Total spent: {fmt(wallet?.totalSpent)}</p>
             </div>
 
-            {/* Top-up form */}
+            {/* Top-up (manual for now — no live payment gateway yet) */}
             <div className="rounded-xl bg-white border p-6 shadow-sm">
-              <h2 className="mb-4 font-semibold text-gray-800">Top Up Wallet</h2>
-              <form onSubmit={initiateTopup} className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Amount (ZAR)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="0.01"
-                    value={topupAmount}
-                    onChange={(e) => setTopupAmount(e.target.value)}
-                    placeholder="e.g. 500.00"
-                    className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                    required
-                  />
-                </div>
-                {topupError  && <p className="text-xs text-red-600">{topupError}</p>}
-                {topupResult && <p className="text-xs text-green-700 break-all">{topupResult}</p>}
-                <button
-                  type="submit"
-                  disabled={topupLoading}
-                  className="w-full rounded-lg bg-green-700 py-2 text-sm font-semibold text-white hover:bg-green-800 disabled:opacity-60"
-                >
-                  {topupLoading ? "Processing…" : "Initiate Top-Up"}
-                </button>
-              </form>
+              <h2 className="mb-2 font-semibold text-gray-800">Top Up Wallet</h2>
+              <p className="text-sm text-gray-500">
+                Online top-ups are launching soon. To add funds right now, contact
+                support and we&apos;ll credit your wallet directly.
+              </p>
+              <a
+                href="mailto:support@farmersmarket.example?subject=Wallet%20top-up%20request"
+                className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-green-700 py-2 text-sm font-semibold text-white hover:bg-green-800"
+              >
+                Contact support to top up
+              </a>
             </div>
 
             {/* Auto top-up info */}
