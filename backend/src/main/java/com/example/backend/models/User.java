@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -60,35 +61,47 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Relationships
+    // Relationships. All @JsonIgnore: these are the inverse side of a
+    // bidirectional relationship, and serializing them would recurse back
+    // into the owning side (e.g. Order.farmer -> User.farmerOrders ->
+    // Order.farmer -> ...), which blows the stack mid-response and sends
+    // the client a truncated, invalid JSON body.
+    @JsonIgnore
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private GoogleAccount googleAccount;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Tenant tenant;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Wallet wallet;
 
     // @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
     // private List<Product> products = new ArrayList<>();
 
+    @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL)
     private List<Order> buyerOrders = new ArrayList<>();
 
+    @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL)
     private List<Order> farmerOrders = new ArrayList<>();
 
+    @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<>();
 
+    @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "reviewer", cascade = CascadeType.ALL)
     private List<Review> reviewsGiven = new ArrayList<>();
 
+    @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "reviewee", cascade = CascadeType.ALL)
     private List<Review> reviewsReceived = new ArrayList<>();

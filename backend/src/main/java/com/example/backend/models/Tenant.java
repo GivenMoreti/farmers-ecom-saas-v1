@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -69,10 +70,12 @@ public class Tenant {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
+    @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL)
     private List<Vehicle> vehicles = new ArrayList<>();
