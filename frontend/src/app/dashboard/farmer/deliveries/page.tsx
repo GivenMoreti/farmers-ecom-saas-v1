@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useFarmerAuth } from "../FarmerAuthContext";
 
 interface Order {
   id: string;
@@ -17,13 +18,13 @@ interface Delivery {
 }
 
 export default function FarmerDeliveriesPage() {
+  const { token } = useFarmerAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadOrders = async () => {
-    const token = localStorage.getItem("token") || "";
     const data = await api.get("/orders/farmer", token);
     const filtered = (data || []).filter((o: Order) => o.farmerDeliverySelected);
     setOrders(filtered);
@@ -33,14 +34,12 @@ export default function FarmerDeliveriesPage() {
   };
 
   const loadDeliveries = async (orderId: string) => {
-    const token = localStorage.getItem("token") || "";
     if (!orderId) return;
     const data = await api.get(`/deliveries/order/${orderId}`, token);
     setDeliveries(data || []);
   };
 
   const createDelivery = async () => {
-    const token = localStorage.getItem("token") || "";
     if (!selectedOrderId) return;
     await api.post(
       "/deliveries",
@@ -65,24 +64,34 @@ export default function FarmerDeliveriesPage() {
       }
     };
     run();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   useEffect(() => {
     if (selectedOrderId) {
       loadDeliveries(selectedOrderId).catch(console.error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedOrderId]);
 
-  if (loading) return <div className="p-6">Loading deliveries...</div>;
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Farmer Delivery Tracking</h1>
-      <div className="mb-4 flex gap-3">
+    <div className="mx-auto max-w-6xl">
+      <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Deliveries</h1>
+      <p className="mt-1 text-sm text-gray-500">Create and track deliveries for orders you&apos;re fulfilling.</p>
+
+      <div className="mt-6 flex flex-wrap gap-3">
         <select
           value={selectedOrderId}
           onChange={(e) => setSelectedOrderId(e.target.value)}
-          className="border rounded px-3 py-2"
+          className="rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
         >
           {orders.map((order) => (
             <option key={order.id} value={order.id}>
@@ -90,20 +99,22 @@ export default function FarmerDeliveriesPage() {
             </option>
           ))}
         </select>
-        <button onClick={createDelivery} className="px-4 py-2 bg-primary text-white rounded">
-          Create Delivery
+        <button onClick={createDelivery} className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90">
+          Create delivery
         </button>
       </div>
 
-      <div className="space-y-3">
+      <div className="mt-6 space-y-3">
         {deliveries.length === 0 ? (
-          <div className="p-4 bg-white rounded shadow">No deliveries for this order.</div>
+          <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center text-sm text-gray-500 shadow-sm">
+            No deliveries for this order.
+          </div>
         ) : (
           deliveries.map((delivery) => (
-            <div key={delivery.id} className="p-4 bg-white rounded shadow">
-              <p className="font-semibold">Tracking: {delivery.trackingCode}</p>
-              <p className="text-sm text-gray-600">Status: {delivery.status}</p>
-              <p className="text-sm text-gray-600">Dropoff: {delivery.dropoffAddress}</p>
+            <div key={delivery.id} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <p className="font-medium text-gray-900">Tracking: {delivery.trackingCode}</p>
+              <p className="mt-1 text-sm text-gray-500">Status: {delivery.status}</p>
+              <p className="text-sm text-gray-500">Dropoff: {delivery.dropoffAddress}</p>
             </div>
           ))
         )}
