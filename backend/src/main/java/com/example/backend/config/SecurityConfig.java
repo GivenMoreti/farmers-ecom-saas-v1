@@ -27,8 +27,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 
 public class SecurityConfig {
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final UserRepository userRepository;
 
     @Bean
@@ -38,16 +36,13 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(ex -> ex
-                // API calls should get 401 JSON-style failures instead of OAuth redirects.
-                .authenticationEntryPoint((request, response, authException) -> {
-                    if (request.getRequestURI() != null && request.getRequestURI().startsWith("/api/")) {
-                        response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
-                        return;
-                    }
-                    response.sendRedirect("/oauth2/authorization/google");
-                })
+                // This is a stateless JSON API: the frontend (NextAuth) owns the Google
+                // OAuth dance entirely, so unauthenticated requests just get a 401.
+                .authenticationEntryPoint((request, response, authException) ->
+                    response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase())
                 )
-            
+                )
+
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",
@@ -61,12 +56,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/buyer/**").hasAnyRole("BUYER", "FARMER")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOAuth2UserService)
-                )
-                .successHandler(oAuth2LoginSuccessHandler)
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

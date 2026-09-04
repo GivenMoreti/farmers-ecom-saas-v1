@@ -1,9 +1,14 @@
 package com.example.backend.services;
 
-import java.util.Base64;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.example.backend.config.JwtService;
 import com.example.backend.dtos.AuthRequest;
@@ -25,20 +30,48 @@ public class AuthService {
     private final WalletRepository walletRepository;
     private final JwtService jwtService;
 
+    @Value("${app.google.client-id}")
+    private String googleClientId;
+
+    private GoogleIdTokenVerifier googleIdTokenVerifier;
+
+    @PostConstruct
+    private void init() throws GeneralSecurityException, IOException {
+        googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance())
+            .setAudience(Collections.singletonList(googleClientId))
+            .build();
+    }
+
     public AuthResponse googleLogin(AuthRequest request) {
         if (request.getIdToken() == null || request.getIdToken().isBlank()) {
             throw new IllegalArgumentException("Missing idToken");
         }
 
-        Map<String, Object> payload = decodeJwtPayload(request.getIdToken());
-        String email = (String) payload.get("email");
-        String name = (String) payload.getOrDefault("name", email);
-        String googleId = (String) payload.get("sub");
+        // This verify() call is the trust boundary: it checks the token's signature
+        // against Google's public keys and that the audience matches our client id.
+        // Never trust a decoded-but-unverified JWT payload from the client.
+        GoogleIdToken idToken;
+        try {
+            idToken = googleIdTokenVerifier.verify(request.getIdToken());
+        } catch (GeneralSecurityException | IOException | IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Invalid Google token", ex);
+        }
+        if (idToken == null) {
+            throw new IllegalArgumentException("Invalid Google token");
+        }
+
+        GoogleIdToken.Payload payload = idToken.getPayload();
+        String email = payload.getEmail();
+        String googleId = payload.getSubject();
         String picture = (String) payload.get("picture");
 
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Token payload is missing email");
         }
+
+        String rawName = (String) payload.get("name");
+        final String name = (rawName == null || rawName.isBlank()) ? email : rawName;
 
         User user = userRepository.findByEmail(email)
             .orElseGet(() -> userRepository.save(User.builder()
@@ -109,30 +142,5 @@ public class AuthService {
         }
 
         return builder.build();
-    }
-
-    private Map<String, Object> decodeJwtPayload(String token) {
-        try {
-            String[] parts = token.split("\\.");
-            if (parts.length < 2) {
-                throw new IllegalArgumentException("Invalid token");
-            }
-            byte[] decoded = Base64.getUrlDecoder().decode(parts[1]);
-            String payload = new String(decoded);
-            return Map.of(
-                "email", extractJsonValue(payload, "email"),
-                "name", extractJsonValue(payload, "name"),
-                "sub", extractJsonValue(payload, "sub"),
-                "picture", extractJsonValue(payload, "picture")
-            );
-        } catch (Exception ex) {
-            throw new RuntimeException("Invalid google token payload", ex);
-        }
-    }
-
-    private String extractJsonValue(String json, String key) {
-        Pattern pattern = Pattern.compile("\\\"" + key + "\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
-        Matcher matcher = pattern.matcher(json);
-        return matcher.find() ? matcher.group(1) : null;
     }
 }

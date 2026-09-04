@@ -1,20 +1,12 @@
 // lib/auth.ts
+import { signOut as nextAuthSignOut } from "next-auth/react";
 import { api } from "./api";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-const BACKEND_BASE_URL = API_URL.endsWith("/api")
-  ? API_URL.slice(0, -4)
-  : API_URL;
-
-export const startGoogleLogin = () => {
-  if (typeof window === "undefined") return;
-  window.location.assign(`${BACKEND_BASE_URL}/oauth2/authorization/google`);
-};
 
 export const signOut = async () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   localStorage.removeItem("userId");
+  await nextAuthSignOut({ redirect: false });
 };
 
 export interface AuthResponse {
