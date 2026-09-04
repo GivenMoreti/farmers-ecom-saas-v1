@@ -40,18 +40,23 @@ public class Wallet {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @Builder.Default
     @Column(precision = 10, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @Builder.Default
     @Column(name = "total_spent", precision = 10, scale = 2)
     private BigDecimal totalSpent = BigDecimal.ZERO;
 
+    @Builder.Default
     @Column(name = "auto_topup_enabled")
     private boolean autoTopupEnabled = false;
 
+    @Builder.Default
     @Column(name = "auto_topup_threshold", precision = 10, scale = 2)
     private BigDecimal autoTopupThreshold = new BigDecimal("20.00");
 
+    @Builder.Default
     @Column(name = "auto_topup_amount", precision = 10, scale = 2)
     private BigDecimal autoTopupAmount = new BigDecimal("100.00");
 
@@ -63,6 +68,7 @@ public class Wallet {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
     private List<WalletTransaction> transactions = new ArrayList<>();
 }

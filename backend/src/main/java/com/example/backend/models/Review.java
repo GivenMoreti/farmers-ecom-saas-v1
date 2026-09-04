@@ -61,6 +61,7 @@ public class Review {
     @Column(length = 1000)
     private String comment;
 
+    @Builder.Default
     @Column(name = "is_public")
     private boolean isPublic = true;
 

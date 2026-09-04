@@ -1,6 +1,20 @@
 -- ======================================================
 -- DATABASE
 -- ======================================================
+-- These 7 tables are kept hand-written (with indexes/engine/charset chosen
+-- deliberately) and must stay in sync with their JPA entities in
+-- backend/src/main/java/com/example/backend/models — column names, types,
+-- and especially ENUM(...) values must match the Java enum constant names
+-- exactly (Hibernate's EnumType.STRING does Enum.valueOf(), which is
+-- case-sensitive). A mismatch here doesn't fail at startup — ddl-auto=update
+-- only adds/alters columns it finds missing — it fails later, at read time,
+-- for whichever row actually has the bad value.
+--
+-- Every other entity (Order, Delivery, Vehicle, Favorite, Review, ChatRoom,
+-- Message, EscrowTransaction, ...) is NOT defined here; Hibernate's
+-- ddl-auto=update creates/maintains those tables automatically from the
+-- entity classes on application startup, so this script never needs to
+-- cover them for the app to work.
 
 CREATE DATABASE IF NOT EXISTS farm_marketplace_db
 CHARACTER SET utf8mb4
@@ -111,17 +125,13 @@ CREATE TABLE IF NOT EXISTS wallets (
 CREATE TABLE IF NOT EXISTS categories (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    icon VARCHAR(50),
-    parent_id VARCHAR(36),
+    description VARCHAR(500),
+    is_active BOOLEAN DEFAULT TRUE,
 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_category_parent
-        FOREIGN KEY (parent_id)
-        REFERENCES categories(id)
-        ON DELETE SET NULL,
-
-    INDEX idx_categories_parent_id (parent_id),
     INDEX idx_categories_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -140,8 +150,8 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
 
     price DECIMAL(10,2) NOT NULL,
-    price_unit ENUM('unit','kg','ton')
-        DEFAULT 'unit',
+    price_unit ENUM('UNIT','KG','TON')
+        DEFAULT 'UNIT',
 
     daily_listing_fee DECIMAL(10,2)
         DEFAULT 1.00,
@@ -153,6 +163,8 @@ CREATE TABLE IF NOT EXISTS products (
     unlisted_at DATETIME NULL,
 
     media JSON,
+    livestock_details JSON,
+    crop_details JSON,
 
     status ENUM(
         'AVAILABLE',

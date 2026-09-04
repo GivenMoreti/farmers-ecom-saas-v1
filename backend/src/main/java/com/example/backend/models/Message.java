@@ -41,9 +41,11 @@ public class Message {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private MessageType type = MessageType.TEXT;
 
+    @Builder.Default
     @Column(name = "is_read")
     private boolean isRead = false;
 

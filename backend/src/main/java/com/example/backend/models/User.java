@@ -48,6 +48,7 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    @Builder.Default
     @Column(name = "is_active")
     private boolean active = true;
 
@@ -72,18 +73,23 @@ public class User {
     // @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
     // private List<Product> products = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL)
     private List<Order> buyerOrders = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL)
     private List<Order> farmerOrders = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "reviewer", cascade = CascadeType.ALL)
     private List<Review> reviewsGiven = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "reviewee", cascade = CascadeType.ALL)
     private List<Review> reviewsReceived = new ArrayList<>();
 

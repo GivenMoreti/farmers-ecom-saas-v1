@@ -38,6 +38,7 @@ public class Category {
 	@Column(length = 500)
 	private String description;
 
+	@Builder.Default
 	@Column(name = "is_active")
 	private boolean active = true;
 
@@ -49,6 +50,7 @@ public class Category {
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "category")
 	private List<Product> products = new ArrayList<>();
 }

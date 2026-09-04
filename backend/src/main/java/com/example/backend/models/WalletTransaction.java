@@ -54,6 +54,7 @@ public class WalletTransaction {
     @Column(name = "reference_id")
     private String referenceId;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private TransactionStatus status = TransactionStatus.PENDING;
 

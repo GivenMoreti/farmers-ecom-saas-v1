@@ -45,7 +45,15 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/auth/**",
+                    "/error",
+                    // Only the routes that don't require an existing session go here.
+                    // /api/auth/me and /api/auth/role/select need a real authenticated
+                    // user (they call authentication.getName()) — leaving those out so
+                    // they fall through to .anyRequest().authenticated() below, which
+                    // rejects unauthenticated calls with a clean 401 before the
+                    // controller runs, instead of an NPE on a null Authentication.
+                    "/api/auth/google",
+                    "/api/auth/login",
                     "/api/products/public/**",
                     "/api/categories/**",
                     "/ws/**",

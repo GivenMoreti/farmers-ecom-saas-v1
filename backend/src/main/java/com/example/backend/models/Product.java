@@ -59,13 +59,16 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "price_unit")
     private PriceUnit priceUnit = PriceUnit.UNIT;
 
+    @Builder.Default
     @Column(name = "daily_listing_fee", precision = 10, scale = 2)
     private BigDecimal dailyListingFee = BigDecimal.ONE;
 
+    @Builder.Default
     @Column(name = "is_listed")
     private boolean isListed = false;
 
@@ -78,15 +81,19 @@ public class Product {
     @Column(name = "unlisted_at")
     private LocalDateTime unlistedAt;
 
+    @Builder.Default
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> media = new ArrayList<>();
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private ProductStatus status = ProductStatus.AVAILABLE;
 
+    @Builder.Default
     @Column(name = "view_count")
     private int viewCount = 0;
 
+    @Builder.Default
     @Column(name = "favorite_count")
     private int favoriteCount = 0;
 
@@ -108,12 +115,15 @@ public class Product {
     @Column(columnDefinition = "JSON")
     private Map<String, Object> cropDetails;
 
+    @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<Order> orders = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<Favorite> favorites = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<ChatRoom> chatRooms = new ArrayList<>();
 

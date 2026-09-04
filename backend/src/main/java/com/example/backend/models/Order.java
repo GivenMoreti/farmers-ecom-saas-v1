@@ -61,6 +61,7 @@ public class Order {
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private OrderStatus status = OrderStatus.CART;
 
@@ -76,6 +77,7 @@ public class Order {
     @Column(name = "delivery_instructions")
     private String deliveryInstructions;
 
+    @Builder.Default
     @Column(name = "farmer_delivery_selected")
     private boolean farmerDeliverySelected = false;
 
@@ -108,6 +110,7 @@ public class Order {
     @OneToOne(mappedBy = "order")
     private Review review;
 
+    @Builder.Default
     @OneToMany(mappedBy = "order")
     private List<Delivery> deliveries = new ArrayList<>();
 

@@ -49,6 +49,7 @@ public class EscrowTransaction {
     @Column(name = "platform_revenue", precision = 10, scale = 2)
     private BigDecimal platformRevenue;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private EscrowStatus status = EscrowStatus.PENDING;
 

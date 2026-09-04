@@ -56,6 +56,7 @@ public class Vehicle {
     @Column(name = "capacity_kg")
     private Double capacityKg;
 
+    @Builder.Default
     @Column(name = "is_active")
     private boolean active = true;
 

@@ -57,6 +57,7 @@ public class Tenant {
     @Column(name = "logo_url")
     private String logoUrl;
 
+    @Builder.Default
     @Column(name = "is_verified")
     private boolean verified = false;
 
@@ -68,9 +69,11 @@ public class Tenant {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL)
     private List<Vehicle> vehicles = new ArrayList<>();
 }
